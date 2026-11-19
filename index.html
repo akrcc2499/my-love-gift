@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>I luv u My Love💖</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background-color: #020205;
+    color: #fff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    touch-action: none;
+  }
+  canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+
+  /* ไอคอนเพลงเล็กๆ มุมขวาบน ทุกหน้า ทุกแพลตฟอร์ม */
+  .music-corner-btn {
+    position: fixed;
+    top: max(12px, env(safe-area-inset-top));
+    right: max(12px, env(safe-area-inset-right));
+    z-index: 60;
+    pointer-events: auto;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(20, 20, 36, 0.82);
+    border: 1px solid rgba(255, 133, 179, 0.55);
+    color: #ffb3d1;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 0 12px rgba(255, 77, 148, 0.35);
+    backdrop-filter: blur(8px);
+    transition: transform 0.15s, background 0.2s;
+  }
+  .music-corner-btn:hover {
+    transform: scale(1.08);
+    background: rgba(255, 51, 119, 0.35);
+  }
+
+  .ui-layer {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    pointer-events: none;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom)) 12px;
+  }
+  .header-text {
+    text-shadow: 0 0 20px rgba(255, 105, 180, 0.95);
+    animation: fadeIn 1s ease;
+    margin-top: 2px;
+  }
+  h1 { font-size: clamp(1.3rem, 4vw, 1.95rem); color: #ff85b3; margin-bottom: 2px; letter-spacing: 1px; }
+  p { font-size: clamp(0.75rem, 2.1vw, 0.92rem); color: #e2e8f0; }
+
+  .flower-picker {
+    pointer-events: auto;
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    flex-wrap: wrap;
+    background: rgba(18, 18, 32, 0.84);
+    padding: 7px 12px;
+    border-radius: 24px;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 133, 179, 0.35);
+    margin: 6px auto 0 auto;
+    max-width: 96vw;
+  }
+  .flower-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 133, 179, 0.45);
+    color: #fff;
+    padding: 6px 11px;
+    border-radius: 16px;
+    font-size: clamp(0.73rem, 1.85vw, 0.84rem);
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.15s, background 0.2s;
+    white-space: nowrap;
+  }
+  .flower-btn:hover:not(:disabled) {
+    transform: scale(1.06);
+    background: rgba(255, 77, 141, 0.35);
+  }
+  .flower-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .clear-btn {
+    background: rgba(255, 51, 119, 0.28);
+    border-color: #ff66a3;
+    color: #ffb3d1;
+  }
+
+  .secret-popup, .letter-modal {
+    position: absolute;
+    top: 48%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    background: rgba(15, 15, 28, 0.96);
+    border: 2px solid #ff85b3;
+    padding: 20px 24px;
+    border-radius: 24px;
+    box-shadow: 0 0 45px rgba(255, 105, 180, 0.85);
+    z-index: 100;
+    pointer-events: auto;
+    text-align: center;
+    transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    max-width: 90vw;
+    width: 440px;
+    max-height: 82vh;
+    overflow-y: auto;
+    backdrop-filter: blur(14px);
+  }
+  .secret-popup.show, .letter-modal.show {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  .secret-popup h3, .letter-modal h3 { color: #ff85b3; font-size: 1.2rem; margin-bottom: 10px; }
+  .secret-popup p, .letter-modal p {
+    color: #fff;
+    font-size: clamp(0.88rem, 2.3vw, 0.98rem);
+    line-height: 1.65;
+    white-space: pre-line;
+  }
+  .close-modal-btn {
+    margin-top: 14px;
+    background: linear-gradient(45deg, #ff3377, #ff85b3);
+    border: none;
+    color: #fff;
+    padding: 7px 20px;
+    border-radius: 16px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  .controls {
+    pointer-events: auto;
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    flex-wrap: wrap;
+    background: rgba(15, 15, 25, 0.84);
+    padding: 8px 12px;
+    border-radius: 30px;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 133, 179, 0.35);
+    margin: 0 auto;
+    max-width: 98vw;
+  }
+  button.nav-btn, .upload-btn {
+    background: linear-gradient(45deg, #ff3377, #ff85b3);
+    border: none;
+    color: white;
+    padding: 7px 13px;
+    border-radius: 18px;
+    font-size: clamp(0.72rem, 1.8vw, 0.84rem);
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 0 10px rgba(255, 51, 119, 0.4);
+    white-space: nowrap;
+  }
+  button.nav-btn:hover, .upload-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 18px rgba(255, 51, 119, 0.9);
+  }
+  button.nav-btn.active {
+    background: #fff;
+    color: #ff3377;
+  }
+  .skip-intro-btn {
+    position: fixed;
+    right: 18px;
+    bottom: max(18px, env(safe-area-inset-bottom));
+    z-index: 30;
+    pointer-events: auto;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 133, 179, 0.6);
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: bold;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+  }
+  input[type="file"] { display: none; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<canvas id="canvas"></canvas>
+
+<button class="music-corner-btn" id="musicCornerBtn" onclick="toggleMusic()" title="เปิด/ปิดเพลง">🔇</button>
+
+<button class="skip-intro-btn" id="skipIntroBtn" onclick="finishIntro()">ข้าม Intro ⏭️</button>
+
+<div class="secret-popup" id="secretPopup">
+  <h3 id="popupTitle">ความในใจ 💖</h3>
+  <p id="popupText">แตะดอกไม้เพื่อดูข้อความนะ</p>
+</div>
+
+<div class="letter-modal" id="letterModal">
+  <h3>💌 ถึงที่รักของเค้า</h3>
+  <p>สุขสันต์วันครบรอบ 1ปี7เดือนนะคะ💖
+เวลาผ่านไปไวมาก ไม่คิดเลยว่าเราจะคบกันมานานขนาดนี้🥰 อีกไม่นานก็จะปีใหม่แล้ว🎆 จะวันเกิดที่รักด้วย🎂 จะวันที่เค้าเรียนจบแล้ว🎓 จะครบรอบ2ปีอีก💖 เร็วๆนี้ คงเป็นจุดเปลี่ยนของเค้ามากๆ และอาจจะเป็นจุดเปลี่ยนของชีวิตคู่เราด้วย ขอบคุณนะคะที่ที่รักอยู่ข้างๆเค้า ไม่เคยทิ้งเค้าไปไหน😍 และขอบคุณอีกครั้ง ที่ที่รักรักเค้ามาตลอด ไม่รู้จะพูดอะไรเลย เพราะพุดดอยู่ทุกวันทุกเดือน5555 ก็…เค้ารักที่รักนะคะ💖 จุ๊บบ😘🥰💗</p>
+  <button class="close-modal-btn" onclick="toggleLetter(false)">ปิดการ์ด 💖</button>
+</div>
+
+<div class="ui-layer" id="mainUi" style="display:none;">
+  <div>
+    <div class="header-text">
+      <h1 id="title">I luv u My Love💖</h1>
+      <p id="subtitle">เลือกดอกไม้เพิ่มได้สูงสุด 5 ดอก | แตะดอกไม้ดูข้อความลับ</p>
+    </div>
+
+    <div class="flower-picker" id="flowerPicker">
+      <button class="flower-btn" onclick="addFlower('tulip')">🌷 ทิวลิป</button>
+      <button class="flower-btn" onclick="addFlower('rose')">🌹 กุหลาบ</button>
+      <button class="flower-btn" onclick="addFlower('sunflower')">🌻 ทานตะวัน</button>
+      <button class="flower-btn" onclick="addFlower('gerbera')">🌸 เยอบีร่า</button>
+      <button class="flower-btn" onclick="addFlower('daisy')">🌼 เดซี่</button>
+      <button class="flower-btn clear-btn" onclick="resetFlowers()">🔄 เคลียร์ช่อ (0/5)</button>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="nav-btn" onclick="playIntro()">✨ Intro</button>
+    <button id="btn1" class="nav-btn active" onclick="setStage(1)">1. สวนดอกไม้ (0/5)</button>
+    <button id="btn2" class="nav-btn" onclick="setStage(2)">2. ละอองดาว</button>
+    <label class="upload-btn" id="uploadLabel">
+      📷 เลือกรูปแฟน
+      <input type="file" id="imgInput" accept="image/*">
+    </label>
+    <button class="nav-btn" onclick="toggleLetter(true)">💌 การ์ด</button>
+    <button class="nav-btn" onclick="saveSnapshot()">📸 เซฟรูป</button>
+  </div>
+</div>
+
+<script>
+const LOVE_WORD = "I luv u My Love💖 ";
+const TITLE_1 = "I luv u My Love💖";
+const SUB_1 = "เลือกดอกไม้ได้สูงสุด 5 ดอก | แตะดอกไม้แต่ละดอกเพื่ออ่านความในใจ";
+const TITLE_2 = "I luv u My Love💖";
+const SUB_2 = "แตะหรือลากนิ้วเพื่อเล่นกับละอองดาว หรือกด 'เลือกรูปแฟน' ได้เลย";
+
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let width, height;
+let isIntro = true;
+let stage = 1;
+let animationId;
+let particles = [];
+let imgDataArray = [];
+let imageLoaded = false;
+let mouse = { x: -1000, y: -1000 };
+
+let ambientHearts = [];
+let cursorHearts = [];
+let fireworks = [];
+let goldenDust = [];
+
+// ---------------- ระบบเสียงดนตรี Music Box เบาๆ (ปุ่มมุมขวาบน) ----------------
+let audioCtx = null;
+let musicPlaying = false;
+let musicTimer = null;
+const melodyNotes = [523.25, 659.25, 783.99, 1046.50, 987.77, 783.99, 659.25, 587.33, 698.46, 880.00, 783.99, 659.25];
+let noteStep = 0;
+
+function playMusicStep() {
+  if (!musicPlaying) return;
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = 'sine';
+  osc.frequency.value = melodyNotes[noteStep % melodyNotes.length];
+  noteStep++;
+
+  const now = audioCtx.currentTime;
+  gain.gain.setValueAtTime(0.001, now);
+  gain.gain.exponentialRampToValueAtTime(0.045, now + 0.05);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.65);
+
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.start(now);
+  osc.stop(now + 0.7);
+}
+
+function toggleMusic() {
+  musicPlaying = !musicPlaying;
+  const btn = document.getElementById('musicCornerBtn');
+  if (musicPlaying) {
+    btn.innerText = "🔊";
+    playMusicStep();
+    musicTimer = setInterval(playMusicStep, 520);
+  } else {
+    btn.innerText = "🔇";
+    clearInterval(musicTimer);
+  }
+}
+
+function toggleLetter(show) {
+  const modal = document.getElementById('letterModal');
+  if (show) {
+    hideSecretPopup();
+    modal.classList.add('show');
+    createFirework(width / 2, height / 2);
+  } else {
+    modal.classList.remove('show');
+  }
+}
+
+function saveSnapshot() {
+  const link = document.createElement('a');
+  link.download = 'I-luv-u-My-Love.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+// ---------------- INTRO (Matrix Rain + 3-2-1 + You Are My Love + Heart) ----------------
+let matrixDrops = [];
+let introParticles = [];
+let introStartTime = 0;
+let currentIntroPhrase = "";
+
+const offTextCanvas = document.createElement('canvas');
+const offTextCtx = offTextCanvas.getContext('2d');
+
+function initMatrixRain() {
+  const fontSize = 15;
+  const cols = Math.ceil(width / fontSize);
+  matrixDrops = [];
+  for (let i = 0; i < cols; i++) {
+    matrixDrops.push({
+      x: i * fontSize,
+      y: Math.random() * height,
+      speed: Math.random() * 4 + 2.5,
+      char: Math.random() > 0.5 ? "1" : "0",
+      pink: Math.random() > 0.65
+    });
+  }
+}
+
+function sampleShapePoints(drawFn, step = 7) {
+  offTextCanvas.width = width;
+  offTextCanvas.height = height;
+  offTextCtx.clearRect(0, 0, width, height);
+  drawFn(offTextCtx);
+  const data = offTextCtx.getImageData(0, 0, width, height).data;
+  const pts = [];
+  for (let y = 0; y < height; y += step) {
+    for (let x = 0; x < width; x += step) {
+      const idx = (y * width + x) * 4;
+      if (data[idx + 3] > 120) {
+        pts.push({ x, y });
+      }
+    }
+  }
+  return pts;
+}
+
+function buildIntroFormation(mode) {
+  let targetPts = [];
+  const centerX = width / 2;
+  const centerY = height / 2;
+
+  if (mode === "3" || mode === "2" || mode === "1") {
+    const size = Math.min(width, height) * 0.36;
+    targetPts = sampleShapePoints(octx => {
+      octx.fillStyle = "#fff";
+      octx.font = `900 ${Math.floor(size)}px 'Segoe UI', sans-serif`;
+      octx.textAlign = "center";
+      octx.textBaseline = "middle";
+      octx.fillText(mode, centerX, centerY);
+    }, 6);
+  } else if (mode === "You" || mode === "Are" || mode === "My" || mode === "Love") {
+    const fSize = Math.min(width * 0.24, height * 0.22, 170);
+    targetPts = sampleShapePoints(octx => {
+      octx.fillStyle = "#fff";
+      octx.font = `900 ${Math.floor(fSize)}px 'Segoe UI', sans-serif`;
+      octx.textAlign = "center";
+      octx.textBaseline = "middle";
+      octx.fillText(mode, centerX, centerY);
+    }, 6);
+  } else if (mode === "HEART") {
+    const scale = Math.min(width, height) * 0.017;
+    for (let t = 0; t < Math.PI * 2; t += 0.025) {
+      for (let layer = 0.85; layer <= 1.05; layer += 0.05) {
+        const hx = 16 * Math.pow(Math.sin(t), 3) * scale * layer;
+        const hy = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)) * scale * layer;
+        targetPts.push({ x: centerX + hx, y: centerY + hy });
+      }
+    }
+  }
+
+  const count = Math.max(introParticles.length, targetPts.length);
+  const nextArr = [];
+  for (let i = 0; i < count; i++) {
+    const prev = introParticles[i % Math.max(1, introParticles.length)] || {
+      x: Math.random() * width,
+      y: Math.random() * height,
+      vx: 0,
+      vy: 0
+    };
+    const tgt = targetPts[i % Math.max(1, targetPts.length)] || { x: centerX, y: centerY };
+    nextArr.push({
+      x: prev.x,
+      y: prev.y,
+      tx: tgt.x + (Math.random() - 0.5) * 2,
+      ty: tgt.y + (Math.random() - 0.5) * 2,
+      vx: 0,
+      vy: 0,
+      size: mode === "HEART" ? Math.random() * 2.4 + 1.4 : 2.3
+    });
+  }
+  introParticles = nextArr;
+}
+
+function drawIntroFrame(now) {
+  if (!isIntro) return;
+  const elapsed = (now - introStartTime) / 1000;
+
+  ctx.fillStyle = "rgba(2, 2, 5, 0.28)";
+  ctx.fillRect(0, 0, width, height);
+
+  ctx.font = "bold 13px monospace";
+  ctx.textAlign = "center";
+  for (let i = 0; i < matrixDrops.length; i++) {
+    const d = matrixDrops[i];
+    ctx.fillStyle = d.pink ? "rgba(255, 102, 163, 0.45)" : "rgba(220, 220, 240, 0.22)";
+    ctx.fillText(d.char, d.x, d.y);
+    d.y += d.speed;
+    if (d.y > height) {
+      d.y = -15;
+      d.char = Math.random() > 0.5 ? "1" : "0";
+    }
+  }
+
+  let desired = "";
+  if (elapsed < 1.3) desired = "3";
+  else if (elapsed < 2.5) desired = "2";
+  else if (elapsed < 3.7) desired = "1";
+  else if (elapsed < 5.0) desired = "You";
+  else if (elapsed < 6.2) desired = "Are";
+  else if (elapsed < 7.4) desired = "My";
+  else if (elapsed < 8.7) desired = "Love";
+  else if (elapsed < 11.5) desired = "HEART";
+  else {
+    finishIntro();
+    return;
+  }
+
+  if (desired !== currentIntroPhrase) {
+    currentIntroPhrase = desired;
+    buildIntroFormation(desired);
+  }
+
+  ctx.shadowColor = "#ff4d94";
+  ctx.shadowBlur = 10;
+  for (let i = 0; i < introParticles.length; i++) {
+    const p = introParticles[i];
+    p.vx += (p.tx - p.x) * 0.08;
+    p.vy += (p.ty - p.y) * 0.08;
+    p.vx *= 0.8;
+    p.vy *= 0.8;
+    p.x += p.vx;
+    p.y += p.vy;
+
+    ctx.fillStyle = desired === "HEART" ? "#ff85b3" : "#fff8db";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.shadowBlur = 0;
+
+  if (desired === "HEART") {
+    const pulse = 1 + Math.sin(elapsed * 6) * 0.04;
+    ctx.save();
+    ctx.translate(width / 2, height / 2);
+    ctx.scale(pulse, pulse);
+    ctx.font = `bold ${Math.floor(Math.min(width * 0.055, 24))}px 'Segoe UI', sans-serif`;
+    ctx.fillStyle = "#ffffff";
+    ctx.shadowColor = "#ff1a75";
+    ctx.shadowBlur = 14;
+    ctx.fillText("I luv u My Love💖", 0, 0);
+    ctx.restore();
+  }
+
+  animationId = requestAnimationFrame(drawIntroFrame);
+}
+
+function playIntro() {
+  cancelAnimationFrame(animationId);
+  hideSecretPopup();
+  toggleLetter(false);
+  isIntro = true;
+  currentIntroPhrase = "";
+  introParticles = [];
+  initMatrixRain();
+  introStartTime = performance.now();
+  document.getElementById("mainUi").style.display = "none";
+  document.getElementById("skipIntroBtn").style.display = "inline-block";
+  animationId = requestAnimationFrame(drawIntroFrame);
+}
+
+function finishIntro() {
+  if (!isIntro) return;
+  isIntro = false;
+  cancelAnimationFrame(animationId);
+  document.getElementById("skipIntroBtn").style.display = "none";
+  document.getElementById("mainUi").style.display = "flex";
+  setStage(1);
+}
+
+// ---------------- ชุดสีดอกไม้ & โทนเหลืองเฉพาะทานตะวัน ----------------
+const DISTINCT_PALETTES = [
+  { rgb: "255, 102, 163", glow: "#ff1a75", centerRgb: "120, 20, 60", label: "ชมพูหวาน", note: "I luv u My Love💖 ขอบคุณที่อยู่ข้างกันมาตลอด 1 ปี 7 เดือนนะ ❤️" },
+  { rgb: "56, 189, 248", glow: "#0284c7", centerRgb: "12, 74, 110", label: "ฟ้าสดใส", note: "เธอคือรอยยิ้มและกำลังใจสำคัญในทุกๆ วันของเค้าเลยนะ 💙" },
+  { rgb: "255, 255, 255", glow: "#e2e8f0", centerRgb: "71, 85, 105", label: "ขาวบริสุทธิ์", note: "สัญญาว่าจะดูแลและจับมือเดินไปด้วยกันแบบนี้เรื่อยๆ น้า ✨" },
+  { rgb: "192, 132, 252", glow: "#9333ea", centerRgb: "88, 28, 135", label: "ม่วงละมุน", note: "ทุกช่วงเวลาที่มีเธออยู่ด้วย พิเศษกว่าวันไหนๆ เสมอเลย 💜" },
+  { rgb: "52, 211, 153", glow: "#059669", centerRgb: "6, 78, 59", label: "เขียวมินต์สดชื่น", note: "อยู่ด้วยกันไปนานๆ แบบนี้เลยนะคนเก่งของเค้า 💚" }
+];
+
+const SUNFLOWER_YELLOW_PALETTE = {
+  rgb: "250, 204, 21",
+  glow: "#eab308",
+  centerRgb: "92, 42, 10",
+  label: "เหลืองทองอร่าม",
+  note: "เหมือนดอกทานตะวันที่หันหาดวงอาทิตย์ เค้าก็หันมารักเธอทุกวันเลยนะ 🌻💛"
+};
+
+let placedFlowers = [];
+let isClearing = false;
+
+function pickUnusedPalette() {
+  const usedLabels = new Set(placedFlowers.filter(f => !f.exiting && f.type !== 'sunflower').map(f => f.palette.label));
+  const available = DISTINCT_PALETTES.filter(p => !usedLabels.has(p.label));
+  if (available.length > 0) return available[0];
+  return DISTINCT_PALETTES[placedFlowers.length % DISTINCT_PALETTES.length];
+}
+
+function getActiveFlowers() {
+  return placedFlowers.filter(f => !f.exiting);
+}
+
+function getFlowerSlotPositions(count) {
+  const centerX = width / 2;
+  const centerY = height / 2 + 40;
+  const spread = Math.min(width * 0.19, 140);
+  const layouts = {
+    1: [{ x: centerX, y: centerY - 10, tilt: 0, scale: 1.18 }],
+    2: [
+      { x: centerX - spread * 0.9, y: centerY, tilt: -0.14, scale: 1.08 },
+      { x: centerX + spread * 0.9, y: centerY, tilt: 0.14, scale: 1.08 }
+    ],
+    3: [
+      { x: centerX - spread * 1.35, y: centerY + 15, tilt: -0.2, scale: 0.98 },
+      { x: centerX, y: centerY - 25, tilt: 0, scale: 1.1 },
+      { x: centerX + spread * 1.35, y: centerY + 15, tilt: 0.2, scale: 0.98 }
+    ],
+    4: [
+      { x: centerX - spread * 1.5, y: centerY + 15, tilt: -0.22, scale: 0.9 },
+      { x: centerX - spread * 0.5, y: centerY - 15, tilt: -0.07, scale: 0.98 },
+      { x: centerX + spread * 0.5, y: centerY - 15, tilt: 0.07, scale: 0.98 },
+      { x: centerX + spread * 1.5, y: centerY + 15, tilt: 0.22, scale: 0.9 }
+    ],
+    5: [
+      { x: centerX - spread * 1.7, y: centerY + 20, tilt: -0.24, scale: 0.84 },
+      { x: centerX - spread * 0.85, y: centerY - 5, tilt: -0.12, scale: 0.92 },
+      { x: centerX, y: centerY - 30, tilt: 0, scale: 1.02 },
+      { x: centerX + spread * 0.85, y: centerY - 5, tilt: 0.12, scale: 0.92 },
+      { x: centerX + spread * 1.7, y: centerY + 20, tilt: 0.24, scale: 0.84 }
+    ]
+  };
+  return layouts[count] || [];
+}
+
+function updateFlowerButtonsUI() {
+  const activeCount = getActiveFlowers().length;
+  const isFull = activeCount >= 5 || isClearing;
+  document.querySelectorAll('.flower-btn:not(.clear-btn)').forEach(btn => {
+    btn.disabled = isFull;
+  });
+  document.getElementById('btn1').innerText = `1. สวนดอกไม้ (${activeCount}/5)`;
+}
+
+function addFlower(type, forcedPalette = null) {
+  if (isClearing || getActiveFlowers().length >= 5) return;
+  const palette = (type === 'sunflower')
+    ? SUNFLOWER_YELLOW_PALETTE
+    : (forcedPalette || pickUnusedPalette());
+  const sideFromLeft = placedFlowers.length % 2 === 0;
+
+  placedFlowers.push({
+    type,
+    palette,
+    timeOffset: placedFlowers.length * 1.3,
+    reveal: 0,
+    exiting: false,
+    sideDir: sideFromLeft ? -1 : 1,
+    hitX: width / 2,
+    hitY: height / 2,
+    hitRadius: 75
+  });
+  updateFlowerButtonsUI();
+}
+
+function seedInitialMixedTulips() {
+  const mixedThree = [
+    DISTINCT_PALETTES[0], // ชมพู
+    DISTINCT_PALETTES[1], // ฟ้า
+    DISTINCT_PALETTES[2]  // ขาว
+  ];
+  mixedThree.forEach(pal => addFlower('tulip', pal));
+}
+
+function resetFlowers() {
+  hideSecretPopup();
+  if (placedFlowers.length === 0) {
+    isClearing = false;
+    updateFlowerButtonsUI();
+    return;
+  }
+
+  isClearing = true;
+  placedFlowers.forEach((f, idx) => {
+    f.exiting = true;
+    f.exitDelay = idx * 0.12;
+  });
+  updateFlowerButtonsUI();
+}
+
+function initAmbientEffects() {
+  ambientHearts = [];
+  for (let i = 0; i < 35; i++) {
+    ambientHearts.push({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      size: Math.random() * 14 + 8,
+      speedY: Math.random() * 0.8 + 0.3,
+      sway: Math.random() * Math.PI * 2,
+      opacity: Math.random() * 0.5 + 0.2
+    });
+  }
+  goldenDust = [];
+  for (let i = 0; i < 60; i++) {
+    goldenDust.push({
+      angle: Math.random() * Math.PI * 2,
+      radiusX: Math.random() * 280 + 80,
+      radiusY: Math.random() * 160 + 50,
+      speed: (Math.random() - 0.5) * 0.02 + 0.01,
+      size: Math.random() * 3 + 1,
+      yOffset: (Math.random() - 0.5) * 200
+    });
+  }
+}
+
+function addCursorHeart(x, y) {
+  if (cursorHearts.length > 40) cursorHearts.shift();
+  cursorHearts.push({
+    x: x + (Math.random() - 0.5) * 12,
+    y: y + (Math.random() - 0.5) * 12,
+    vx: (Math.random() - 0.5) * 1.8,
+    vy: -Math.random() * 1.8 - 0.8,
+    size: Math.random() * 12 + 9,
+    alpha: 1
+  });
+}
+
+function createFirework(x, y) {
+  let colors = ["#ff3377", "#38bdf8", "#ffffff", "#ffd700", "#ff85b3"];
+  for (let i = 0; i < 24; i++) {
+    let angle = Math.random() * Math.PI * 2;
+    let speed = Math.random() * 4.5 + 2;
+    fireworks.push({
+      x, y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      alpha: 1,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      size: Math.random() * 11 + 8
+    });
+  }
+}
+
+function drawHeartsLayer() {
+  ctx.textAlign = "center";
+  for (let i = 0; i < ambientHearts.length; i++) {
+    let h = ambientHearts[i];
+    h.y -= h.speedY;
+    h.sway += 0.02;
+    let hx = h.x + Math.sin(h.sway) * 15;
+    if (h.y < -20) {
+      h.y = height + 20;
+      h.x = Math.random() * width;
+    }
+    ctx.font = `${h.size}px sans-serif`;
+    ctx.fillStyle = `rgba(255, 105, 180, ${h.opacity})`;
+    ctx.fillText("💖", hx, h.y);
+  }
+
+  for (let i = fireworks.length - 1; i >= 0; i--) {
+    let fw = fireworks[i];
+    fw.x += fw.vx;
+    fw.y += fw.vy;
+    fw.vy += 0.05;
+    fw.alpha -= 0.02;
+    if (fw.alpha <= 0) {
+      fireworks.splice(i, 1);
+    } else {
+      ctx.font = `${fw.size}px sans-serif`;
+      ctx.fillStyle = fw.color;
+      ctx.globalAlpha = fw.alpha;
+      ctx.fillText("💖", fw.x, fw.y);
+      ctx.globalAlpha = 1.0;
+    }
+  }
+
+  for (let i = cursorHearts.length - 1; i >= 0; i--) {
+    let ch = cursorHearts[i];
+    ch.x += ch.vx;
+    ch.y += ch.vy;
+    ch.alpha -= 0.03;
+    if (ch.alpha <= 0) {
+      cursorHearts.splice(i, 1);
+    } else {
+      ctx.font = `${ch.size}px sans-serif`;
+      ctx.fillStyle = `rgba(255, 77, 148, ${ch.alpha})`;
+      ctx.fillText("💗", ch.x, ch.y);
+    }
+  }
+}
+
+const img = new Image();
+img.crossOrigin = "Anonymous";
+img.src = "photo.jpg"; 
+
+img.onload = function() { processImage(img); };
+img.onerror = function() { img.src = "รูปแฟน.jpg"; };
+
+document.getElementById('imgInput').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    const tempImg = new Image();
+    tempImg.onload = function() {
+      processImage(tempImg);
+      if (stage === 2) initParticles();
+    }
+    tempImg.src = event.target.result;
+  }
+  reader.readAsDataURL(file);
+});
+
+function resize() {
+  width = canvas.width = window.innerWidth;
+  height = canvas.height = window.innerHeight;
+  initAmbientEffects();
+  if (isIntro) initMatrixRain();
+  if (imageLoaded && currentImgObj) {
+    processImage(currentImgObj);
+    if (stage === 2) initParticles();
+  }
+}
+window.addEventListener('resize', resize);
+
+function handleInteraction(clientX, clientY) {
+  mouse.x = clientX;
+  mouse.y = clientY;
+  addCursorHeart(clientX, clientY);
+  if (isIntro) return;
+
+  if (stage === 1 && !isClearing) {
+    let clickedFlower = null;
+    const active = getActiveFlowers();
+    for (let i = active.length - 1; i >= 0; i--) {
+      let f = active[i];
+      let dx = clientX - f.hitX;
+      let dy = clientY - f.hitY;
+      if (Math.sqrt(dx * dx + dy * dy) < f.hitRadius) {
+        clickedFlower = f;
+        break;
+      }
+    }
+    if (clickedFlower) {
+      const names = {
+        tulip: "ดอกทิวลิป 3D",
+        rose: "ดอกกุหลาบ 3D",
+        sunflower: "ดอกทานตะวัน 3D",
+        gerbera: "ดอกเยอบีร่า 3D",
+        daisy: "ดอกเดซี่ 3D"
+      };
+      showSecretPopup(`${names[clickedFlower.type]} (${clickedFlower.palette.label})`, clickedFlower.palette.note);
+      createFirework(clickedFlower.hitX, clickedFlower.hitY);
+    } else {
+      createFirework(clientX, clientY);
+      hideSecretPopup();
+    }
+  } else {
+    createFirework(clientX, clientY);
+  }
+}
+
+function showSecretPopup(title, text) {
+  document.getElementById('popupTitle').innerText = title;
+  document.getElementById('popupText').innerText = text;
+  document.getElementById('secretPopup').classList.add('show');
+}
+function hideSecretPopup() {
+  document.getElementById('secretPopup').classList.remove('show');
+}
+
+window.addEventListener('click', e => { handleInteraction(e.clientX, e.clientY); });
+window.addEventListener('touchstart', e => { 
+  if(e.touches.length > 0) handleInteraction(e.touches[0].clientX, e.touches[0].clientY);
+}, { passive: true });
+window.addEventListener('touchmove', e => { 
+  if(e.touches.length > 0) {
+    mouse.x = e.touches[0].clientX; 
+    mouse.y = e.touches[0].clientY; 
+    addCursorHeart(mouse.x, mouse.y);
+  }
+}, { passive: true });
+
+let currentImgObj = null;
+function processImage(imageObj) {
+  currentImgObj = imageObj;
+  const offCanvas = document.createElement('canvas');
+  const offCtx = offCanvas.getContext('2d');
+  const scale = Math.min((width * 0.8) / imageObj.width, (height * 0.62) / imageObj.height);
+  const w = Math.floor(imageObj.width * scale);
+  const h = Math.floor(imageObj.height * scale);
+  offCanvas.width = width;
+  offCanvas.height = height;
+  offCtx.drawImage(imageObj, (width - w) / 2, (height - h) / 2 + 15, w, h);
+
+  try {
+    imgDataArray = offCtx.getImageData(0, 0, width, height).data;
+    imageLoaded = true;
+  } catch (e) {}
+}
+
+// ---------------- STAGE 1: ดอกไม้ 3 มิติ สมบูรณ์เต็มกลีบไม่แหว่ง ----------------
+let textSpinAngle = 0;
+
+function drawStemAndLeaves(sway, stemLen, easeRatio) {
+  ctx.font = "bold 11px monospace";
+  const allItems = [];
+  const stemSteps = Math.floor(stemLen / 9);
+
+  for (let i = 0; i < stemSteps; i++) {
+    let y = i * 9;
+    let curveX = Math.sin(y * 0.02 + textSpinAngle * 0.5) * 7 + (y / stemLen) * sway;
+    allItems.push({
+      x: curveX * 0.4,
+      y: y + 15,
+      color: `rgba(74, 222, 128, ${(0.95 - y / (stemLen * 2.4)) * Math.max(0.2, easeRatio)})`,
+      txt: "love"
+    });
+  }
+
+  for (let i = 0; i < 20; i++) {
+    let t = i / 20;
+    let leafAlpha = (0.45 + Math.sin(t * Math.PI) * 0.55) * Math.max(0.2, easeRatio);
+    allItems.push({
+      x: -Math.sin(t * Math.PI) * 70 + sway * 0.2 - 8,
+      y: stemLen - t * (stemLen * 0.68),
+      color: `rgba(52, 211, 153, ${leafAlpha})`,
+      txt: "luv"
+    });
+    allItems.push({
+      x: Math.sin(t * Math.PI) * 70 + sway * 0.2 + 8,
+      y: stemLen - 10 - t * (stemLen * 0.64),
+      color: `rgba(52, 211, 153, ${leafAlpha})`,
+      txt: "luv"
+    });
+  }
+
+  const countToDraw = Math.floor(easeRatio * allItems.length);
+  for (let i = 0; i < countToDraw; i++) {
+    ctx.fillStyle = allItems[i].color;
+    ctx.fillText(allItems[i].txt, allItems[i].x, allItems[i].y);
+  }
+}
+
+function drawSculpted3DFlower(sway, centerY, styleType, radiusX, heightY, rgbColor, glowColor, centerRgb, spinSign, easeRatio, sideDir) {
+  let points3D = [];
+  const words = LOVE_WORD.trim().split("");
+  let wordIdx = 0;
+  const rot = textSpinAngle * spinSign * 0.65;
+
+  if (styleType === 'tulip') {
+    for (let layer = 0; layer < 2; layer++) {
+      let rScale = layer === 0 ? 0.75 : 1.0;
+      for (let p = 0; p < 6; p++) {
+        let baseAngle = (p * Math.PI * 2) / 6 + layer * 0.52;
+        for (let v = -0.95; v <= 0.98; v += 0.11) {
+          let cup = Math.sin((v + 1) * Math.PI * 0.48) * (1.06 - Math.max(0, -v) * 0.3);
+          let theta = baseAngle + rot + v * 0.15;
+          let x3d = sway + Math.sin(theta) * radiusX * rScale * cup;
+          let z3d = Math.cos(theta) * radiusX * rScale * cup;
+          let y3d = centerY + v * heightY;
+          points3D.push({ x: x3d, y: y3d, z: z3d, isCenter: false, char: words[wordIdx++ % words.length] });
+        }
+      }
+    }
+  } else if (styleType === 'rose') {
+    const totalSpiralPts = 260;
+    for (let i = 0; i < totalSpiralPts; i++) {
+      let t = i / totalSpiralPts;
+      let angle = i * 0.52 + rot;
+      let r = (0.1 + Math.pow(t, 0.85) * 1.0) * radiusX * 1.15;
+      let petalWave = 1 + 0.16 * Math.sin(angle * 5 - t * 8);
+      let px = Math.sin(angle) * r * petalWave;
+      let py = Math.cos(angle) * r * petalWave;
+      let pz = (1 - t) * 28 + Math.sin(angle * 3) * 10;
+
+      let tiltX = 0.42;
+      let y3d = centerY + py * Math.cos(tiltX) - pz * Math.sin(tiltX) + (t * 14);
+      let z3d = py * Math.sin(tiltX) + pz * Math.cos(tiltX);
+      let x3d = sway + px;
+
+      points3D.push({ x: x3d, y: y3d, z: z3d, isCenter: t < 0.22, char: words[wordIdx++ % words.length] });
+    }
+  } else {
+    const petalCount = styleType === 'sunflower' ? 18 : (styleType === 'gerbera' ? 16 : 12);
+    const layers = styleType === 'gerbera' ? 2 : 1;
+    const innerHole = styleType === 'sunflower' ? 0.44 : (styleType === 'daisy' ? 0.30 : 0.25);
+
+    for (let l = 0; l < layers; l++) {
+      let lScale = l === 0 ? 1.0 : 0.78;
+      for (let p = 0; p < petalCount; p++) {
+        let petalCenterAngle = (p * Math.PI * 2) / petalCount + l * (Math.PI / petalCount) + rot * 0.5;
+        for (let rFrac = innerHole; rFrac <= 1.06; rFrac += 0.10) {
+          let petalWidth = styleType === 'daisy' ? 0.055 : 0.085;
+          let widthSpread = Math.sin(((rFrac - innerHole) / (1.06 - innerHole)) * Math.PI) * petalWidth;
+          let offsets = widthSpread > 0.015 ? [-widthSpread, -widthSpread * 0.5, 0, widthSpread * 0.5, widthSpread] : [0];
+
+          for (let wOff of offsets) {
+            let ang = petalCenterAngle + wOff;
+            let r = rFrac * radiusX * 1.28 * lScale;
+            let px = Math.sin(ang) * r;
+            let py = Math.cos(ang) * r;
+            let pz = Math.sin((rFrac - innerHole) * Math.PI) * 14 + (l * 8);
+
+            let faceTilt = 0.45;
+            let x3d = sway + px;
+            let y3d = centerY + py * Math.cos(faceTilt) - pz * Math.sin(faceTilt);
+            let z3d = py * Math.sin(faceTilt) + pz * Math.cos(faceTilt);
+
+            points3D.push({ x: x3d, y: y3d, z: z3d, isCenter: false, char: words[wordIdx++ % words.length] });
+          }
+        }
+      }
+    }
+
+    const centerRings = styleType === 'sunflower' ? 4 : 2;
+    for (let cr = 0; cr <= centerRings; cr++) {
+      let rad = (cr / centerRings) * (innerHole * radiusX * 1.15);
+      let dots = Math.max(1, cr * 8);
+      for (let d = 0; d < dots; d++) {
+        let ang = (d * Math.PI * 2) / dots + rot;
+        let px = Math.sin(ang) * rad;
+        let py = Math.cos(ang) * rad;
+        let pz = 18 - cr * 2;
+        let faceTilt = 0.45;
+        points3D.push({
+          x: sway + px,
+          y: centerY + py * Math.cos(faceTilt) - pz * Math.sin(faceTilt),
+          z: py * Math.sin(faceTilt) + pz * Math.cos(faceTilt),
+          isCenter: true,
+          char: "•"
+        });
+      }
+    }
+  }
+
+  points3D.sort((a, b) => a.z - b.z);
+
+  const totalChars = points3D.length;
+  const visibleCount = Math.max(0, Math.min(totalChars, Math.round(easeRatio * totalChars)));
+
+  for (let i = 0; i < visibleCount; i++) {
+    let pt = points3D[i];
+    let localT = visibleCount > 1 ? i / (visibleCount - 1) : 1;
+    let edgeFactor = Math.max(0, 1 - localT * 2.2) * (1 - easeRatio * 0.65);
+    let sideSweepX = sideDir * edgeFactor * 110;
+    let backOrbitZ = -Math.sin(edgeFactor * Math.PI) * 45;
+    let drawX = pt.x + sideSweepX;
+    let drawZ = pt.z + backOrbitZ;
+
+    let depthRatio = Math.max(0.25, Math.min(1, (drawZ + radiusX * 1.4) / (radiusX * 2.8)));
+    let fontSize = pt.isCenter ? Math.floor(10 + depthRatio * 6) : Math.floor(9.5 + depthRatio * 7.5);
+    let alpha = Math.min(1, (0.55 + depthRatio * 0.45) * easeRatio);
+
+    ctx.font = `bold ${fontSize}px monospace`;
+    if (pt.isCenter) {
+      ctx.fillStyle = styleType === 'daisy'
+        ? `rgba(250, 204, 21, ${alpha})`
+        : `rgba(${centerRgb}, ${alpha})`;
+      ctx.shadowBlur = 0;
+    } else {
+      ctx.fillStyle = `rgba(${rgbColor}, ${alpha})`;
+      if (depthRatio > 0.65 && easeRatio > 0.5) {
+        ctx.shadowColor = glowColor;
+        ctx.shadowBlur = 10;
+      } else {
+        ctx.shadowBlur = 0;
+      }
+    }
+    ctx.fillText(pt.char, drawX, pt.y);
+  }
+  ctx.shadowBlur = 0;
+}
+
+function drawFlowerByType(flower, cx, cy, tilt, scaleSize) {
+  let p = flower.reveal;
+  let ease = 1 - Math.pow(1 - Math.max(0, Math.min(1, p)), 2.2);
+
+  let sideOffsetX = flower.sideDir * (1 - ease) * (width * 0.32);
+  let backArcY = -Math.sin((1 - ease) * Math.PI) * 40;
+
+  ctx.save();
+  ctx.translate(cx + sideOffsetX, cy + backArcY);
+  ctx.rotate(tilt + flower.sideDir * (1 - ease) * 0.4);
+  ctx.scale(scaleSize, scaleSize);
+
+  const sway = Math.sin(textSpinAngle * 0.7 + flower.timeOffset) * 8;
+  const pal = flower.palette;
+
+  let aura = ctx.createRadialGradient(sway, -62, 10, sway, -62, 118);
+  aura.addColorStop(0, `rgba(${pal.rgb}, ${0.42 * ease})`);
+  aura.addColorStop(0.55, `rgba(${pal.rgb}, ${0.12 * ease})`);
+  aura.addColorStop(1, `rgba(${pal.rgb}, 0)`);
+  ctx.fillStyle = aura;
+  ctx.beginPath();
+  ctx.arc(sway, -62, 118, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.textAlign = "center";
+
+  drawStemAndLeaves(sway, 175, ease);
+
+  if (flower.type === 'tulip') {
+    drawSculpted3DFlower(sway, -62, 'tulip', 46, 72, pal.rgb, pal.glow, pal.centerRgb, 1, ease, flower.sideDir);
+  } else if (flower.type === 'rose') {
+    drawSculpted3DFlower(sway, -64, 'rose', 52, 60, pal.rgb, pal.glow, pal.centerRgb, 1, ease, flower.sideDir);
+  } else if (flower.type === 'sunflower') {
+    drawSculpted3DFlower(sway, -66, 'sunflower', 58, 58, pal.rgb, pal.glow, pal.centerRgb, 1, ease, flower.sideDir);
+    if (ease > 0.35) {
+      let cAlpha = Math.min(1, (ease - 0.35) / 0.65);
+      let grad = ctx.createRadialGradient(sway, -66, 2, sway, -66, 25);
+      grad.addColorStop(0, `rgba(${pal.centerRgb}, ${cAlpha})`);
+      grad.addColorStop(1, `rgba(45, 18, 5, ${cAlpha})`);
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(sway, -66, 23 * cAlpha, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else if (flower.type === 'gerbera') {
+    drawSculpted3DFlower(sway, -66, 'gerbera', 58, 56, pal.rgb, pal.glow, pal.centerRgb, -1, ease, flower.sideDir);
+    if (ease > 0.4) {
+      let gAlpha = Math.min(1, (ease - 0.4) / 0.6);
+      ctx.fillStyle = `rgba(${pal.centerRgb}, ${gAlpha})`;
+      ctx.beginPath();
+      ctx.arc(sway, -66, 13 * gAlpha, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else if (flower.type === 'daisy') {
+    drawSculpted3DFlower(sway, -66, 'daisy', 55, 54, pal.rgb, pal.glow, pal.centerRgb, 1, ease, flower.sideDir);
+    if (ease > 0.4) {
+      let dAlpha = Math.min(1, (ease - 0.4) / 0.6);
+      ctx.fillStyle = `rgba(250, 204, 21, ${dAlpha})`;
+      ctx.beginPath();
+      ctx.arc(sway, -66, 15 * dAlpha, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  ctx.restore();
+}
+
+function drawFlowersStage() {
+  ctx.fillStyle = 'rgba(2, 2, 5, 0.35)';
+  ctx.fillRect(0, 0, width, height);
+
+  drawHeartsLayer();
+
+  for (let i = placedFlowers.length - 1; i >= 0; i--) {
+    const f = placedFlowers[i];
+    if (!f.exiting) {
+      if (f.reveal < 1) f.reveal = Math.min(1, f.reveal + 0.022);
+    } else {
+      if (f.exitDelay > 0) {
+        f.exitDelay -= 0.016;
+      } else {
+        f.reveal = Math.max(0, f.reveal - 0.025);
+        if (f.reveal <= 0) {
+          placedFlowers.splice(i, 1);
+          updateFlowerButtonsUI();
+        }
+      }
+    }
+  }
+
+  if (isClearing && placedFlowers.length === 0) {
+    isClearing = false;
+    updateFlowerButtonsUI();
+  }
+
+  const activeFlowers = getActiveFlowers();
+  const slots = getFlowerSlotPositions(activeFlowers.length);
+  const baseScale = Math.min(width, height) < 600 ? 0.85 : 1.15;
+
+  activeFlowers.forEach((flower, idx) => {
+    const slot = slots[idx];
+    if (!slot) return;
+    flower.hitX = slot.x;
+    flower.hitY = slot.y - 40;
+    flower.hitRadius = 65 * slot.scale * baseScale;
+    drawFlowerByType(flower, slot.x, slot.y, slot.tilt, slot.scale * baseScale);
+  });
+
+  placedFlowers.filter(f => f.exiting).forEach(flower => {
+    drawFlowerByType(flower, width / 2, height / 2 + 25, 0, baseScale * 0.9);
+  });
+
+  if (activeFlowers.length === 0 && !isClearing) {
+    ctx.font = "bold 16px 'Segoe UI', sans-serif";
+    ctx.fillStyle = "rgba(255, 182, 213, 0.85)";
+    ctx.textAlign = "center";
+    ctx.fillText("ช่อดอกไม้ว่างแล้ว กดเลือกดอกไม้ด้านบนเพื่อจัดช่อใหม่ได้เลย 💖", width / 2, height / 2);
+  }
+
+  for (let i = 0; i < goldenDust.length; i++) {
+    let gd = goldenDust[i];
+    gd.angle += gd.speed;
+    let gx = width / 2 + Math.cos(gd.angle) * gd.radiusX;
+    let gy = height / 2 + 20 + gd.yOffset + Math.sin(gd.angle) * gd.radiusY * 0.4;
+    let zScale = (Math.sin(gd.angle) + 1.5) / 2.5;
+
+    ctx.fillStyle = `rgba(255, 223, 100, ${zScale * 0.85})`;
+    ctx.beginPath();
+    ctx.arc(gx, gy, gd.size * zScale, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  textSpinAngle += 0.025;
+  if (stage === 1 && !isIntro) animationId = requestAnimationFrame(drawFlowersStage);
+}
+
+// ---------------- STAGE 2: ละอองดาว 120 FPS ----------------
+function initParticles() {
+  particles = [];
+  if (!imageLoaded) return;
+
+  const gap = 3;
+  for (let y = 0; y < height; y += gap) {
+    for (let x = 0; x < width; x += gap) {
+      const index = (y * width + x) * 4;
+      const r = imgDataArray[index];
+      const g = imgDataArray[index + 1];
+      const b = imgDataArray[index + 2];
+      const a = imgDataArray[index + 3];
+      const brightness = (r + g + b) / 3;
+
+      if (a > 128 && brightness > 22) {
+        particles.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          originX: x,
+          originY: y,
+          color: `rgb(${r},${g},${b})`,
+          size: 2.3,
+          vx: 0,
+          vy: 0
+        });
+      }
+    }
+  }
+}
+
+function animateParticles() {
+  ctx.fillStyle = 'rgba(2, 2, 5, 0.4)';
+  ctx.fillRect(0, 0, width, height);
+
+  if (!imageLoaded) {
+    ctx.fillStyle = "#ff85b3";
+    ctx.font = "16px sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("กดปุ่ม '📷 เลือกรูปแฟน' ด้านล่างเพื่อเลือกรูปได้เลยนะ 💖", width / 2, height / 2);
+  }
+
+  const repelRadius = 40;
+
+  for (let i = 0; i < particles.length; i++) {
+    let p = particles[i];
+    let dx = mouse.x - p.x;
+    let dy = mouse.y - p.y;
+    let distSq = dx * dx + dy * dy;
+
+    if (distSq < repelRadius * repelRadius) {
+      let dist = Math.sqrt(distSq);
+      let force = (repelRadius - dist) / repelRadius;
+      p.vx -= (dx / dist) * force * 7;
+      p.vy -= (dy / dist) * force * 7;
+    }
+
+    p.vx += (p.originX - p.x) * 0.1;
+    p.vy += (p.originY - p.y) * 0.1;
+    p.vx *= 0.78;
+    p.vy *= 0.78;
+    p.x += p.vx;
+    p.y += p.vy;
+
+    ctx.fillStyle = p.color;
+    ctx.fillRect(p.x, p.y, p.size, p.size);
+  }
+
+  drawHeartsLayer();
+  if (stage === 2 && !isIntro) animationId = requestAnimationFrame(animateParticles);
+}
+
+// ---------------- เปลี่ยนหน้า ----------------
+function setStage(newStage) {
+  isIntro = false;
+  document.getElementById("skipIntroBtn").style.display = "none";
+  document.getElementById("mainUi").style.display = "flex";
+
+  stage = newStage;
+  cancelAnimationFrame(animationId);
+  hideSecretPopup();
+
+  document.querySelectorAll('button.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('btn' + stage).classList.add('active');
+  document.getElementById('flowerPicker').style.display = (stage === 1) ? 'flex' : 'none';
+
+  if (stage === 1) {
+    document.getElementById('title').innerText = TITLE_1;
+    document.getElementById('subtitle').innerText = SUB_1;
+    drawFlowersStage();
+  } else if (stage === 2) {
+    document.getElementById('title').innerText = TITLE_2;
+    document.getElementById('subtitle').innerText = SUB_2;
+    initParticles();
+    animateParticles();
+  }
+}
+
+// เริ่มต้นทำงาน
+resize();
+seedInitialMixedTulips();
+playIntro();
+</script>
+</body>
+</html>
