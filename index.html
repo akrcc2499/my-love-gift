@@ -258,7 +258,6 @@
       <input type="file" id="imgInput" accept="image/*">
     </label>
     <button class="nav-btn" onclick="toggleLetter(true)">💌 การ์ด</button>
-    <button class="nav-btn" onclick="saveSnapshot()">📸 เซฟรูป</button>
   </div>
 </div>
 
@@ -338,13 +337,6 @@ function toggleLetter(show) {
   } else {
     modal.classList.remove('show');
   }
-}
-
-function saveSnapshot() {
-  const link = document.createElement('a');
-  link.download = 'I-luv-u-My-Love.png';
-  link.href = canvas.toDataURL('image/png');
-  link.click();
 }
 
 // ---------------- INTRO (Matrix Rain + 3-2-1 + You Are My Love + Heart) ----------------
@@ -1156,11 +1148,17 @@ function drawFlowersStage() {
     drawFlowerByType(flower, width / 2, height / 2 + 25, 0, baseScale * 0.9);
   });
 
+  // ข้อความตอนช่อดอกไม้ว่าง (0/5) จัดให้อยู่กึ่งกลางจอพอดีทุกขนาดหน้าจอ
   if (activeFlowers.length === 0 && !isClearing) {
-    ctx.font = "bold 16px 'Segoe UI', sans-serif";
-    ctx.fillStyle = "rgba(255, 182, 213, 0.85)";
+    const emptyFontSize = Math.floor(Math.max(12, Math.min(width * 0.036, 17)));
+    const maxTextW = width * 0.88;
+    ctx.save();
+    ctx.font = `bold ${emptyFontSize}px 'Segoe UI', sans-serif`;
+    ctx.fillStyle = "rgba(255, 182, 213, 0.9)";
     ctx.textAlign = "center";
-    ctx.fillText("ช่อดอกไม้ว่างแล้ว กดเลือกดอกไม้ด้านบนเพื่อจัดช่อใหม่ได้เลย 💖", width / 2, height / 2);
+    ctx.textBaseline = "middle";
+    ctx.fillText("ช่อดอกไม้ว่างแล้ว กดเลือกดอกไม้ด้านบนเพื่อจัดช่อใหม่ได้เลย 💖", width / 2, height / 2, maxTextW);
+    ctx.restore();
   }
 
   for (let i = 0; i < goldenDust.length; i++) {
@@ -1216,10 +1214,12 @@ function animateParticles() {
   ctx.fillRect(0, 0, width, height);
 
   if (!imageLoaded) {
+    const promptSize = Math.floor(Math.max(12, Math.min(width * 0.036, 16)));
     ctx.fillStyle = "#ff85b3";
-    ctx.font = "16px sans-serif";
+    ctx.font = `bold ${promptSize}px 'Segoe UI', sans-serif`;
     ctx.textAlign = "center";
-    ctx.fillText("กดปุ่ม '📷 เลือกรูปแฟน' ด้านล่างเพื่อเลือกรูปได้เลยนะ 💖", width / 2, height / 2);
+    ctx.textBaseline = "middle";
+    ctx.fillText("กดปุ่ม '📷 เลือกรูปแฟน' ด้านล่างเพื่อเลือกรูปได้เลยนะ 💖", width / 2, height / 2, width * 0.88);
   }
 
   const repelRadius = 40;
